@@ -1,12 +1,14 @@
 import type { PageServerLoad } from './$types';
 import type { SpaceImage, APODImage } from '$lib/types/mars';
 
+import { NASA_API_KEY } from '$env/static/private';
+
 const APOD_API = 'https://api.nasa.gov/planetary/apod';
-const DEMO_API_KEY = 'DEMO_KEY';
+const API_KEY = NASA_API_KEY || 'DEMO_KEY';
 
 async function fetchAPOD(): Promise<SpaceImage | null> {
 	try {
-		const response = await fetch(`${APOD_API}?api_key=${DEMO_API_KEY}`);
+		const response = await fetch(`${APOD_API}?api_key=${API_KEY}`);
 		if (!response.ok) return null;
 
 		const data: APODImage = await response.json();
@@ -37,7 +39,7 @@ async function fetchRecentAPOD(count: number = 30): Promise<SpaceImage[]> {
 		startDate.setDate(startDate.getDate() - count);
 
 		const response = await fetch(
-			`${APOD_API}?api_key=${DEMO_API_KEY}&start_date=${startDate.toISOString().split('T')[0]}&end_date=${endDate.toISOString().split('T')[0]}`
+			`${APOD_API}?api_key=${API_KEY}&start_date=${startDate.toISOString().split('T')[0]}&end_date=${endDate.toISOString().split('T')[0]}`
 		);
 		if (!response.ok) return [];
 

@@ -5,9 +5,10 @@
 	interface Props {
 		photos: Photo[];
 		onPhotoClick?: (photo: Photo) => void;
+		accentColor?: string;
 	}
 
-	let { photos, onPhotoClick }: Props = $props();
+	let { photos, onPhotoClick, accentColor = 'red' }: Props = $props();
 
 	// Track which images should start loading (sequential loading for MER)
 	let loadedCount = $state(0);
@@ -53,44 +54,69 @@
 			previousLength = photos.length;
 		}
 	});
+
+	// Dynamic classes based on accent color
+	const hoverBorderClass = $derived({
+		rose: 'hover:border-rose-500/30',
+		red: 'hover:border-red-500/30',
+		orange: 'hover:border-orange-500/30',
+		amber: 'hover:border-amber-500/30'
+	}[accentColor] || 'hover:border-red-500/30');
+
+	const cornerClass = $derived({
+		rose: 'border-rose-500/50',
+		red: 'border-red-500/50',
+		orange: 'border-orange-500/50',
+		amber: 'border-amber-500/50'
+	}[accentColor] || 'border-red-500/50');
+
+	const spinnerClass = $derived({
+		rose: 'border-t-rose-500/50',
+		red: 'border-t-red-500/50',
+		orange: 'border-t-orange-500/50',
+		amber: 'border-t-amber-500/50'
+	}[accentColor] || 'border-t-red-500/50');
 </script>
 
 {#if photos.length === 0}
-	<div class="flex flex-col items-center justify-center py-20 text-gray-400">
-		<svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+	<div class="flex flex-col items-center justify-center py-20 text-white/30">
+		<svg class="w-12 h-12 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
 		</svg>
-		<p class="text-lg">Select a rover and click Search</p>
-		<p class="text-sm">Use the filters above to explore Mars rover imagery</p>
+		<p class="text-xs tracking-wider uppercase">Select a rover and search</p>
 	</div>
 {:else}
-	<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+	<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
 		{#each photos as photo, index (photo.id)}
 			<button
 				type="button"
-				class="group relative aspect-square overflow-hidden rounded-lg bg-gray-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+				class="group relative aspect-square overflow-hidden bg-white/[0.02] border border-white/5 {hoverBorderClass} cursor-pointer focus:outline-none transition-all duration-300"
 				onclick={() => onPhotoClick?.(photo)}
 			>
 				{#if shouldLoad(index, photo.img_src)}
 					<img
 						src={photo.img_src}
 						alt="Mars surface from {photo.camera.full_name}"
-						class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+						class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
 						loading="lazy"
 						onerror={handleImageError}
 						onload={handleImageLoad}
 					/>
 				{:else}
 					<div class="w-full h-full flex items-center justify-center">
-						<div class="w-8 h-8 border-2 border-gray-600 border-t-orange-500 rounded-full animate-spin"></div>
+						<div class="w-6 h-6 border border-white/20 {spinnerClass} rounded-full animate-spin"></div>
 					</div>
 				{/if}
-				<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-					<div class="absolute bottom-0 left-0 right-0 p-3">
-						<p class="text-white text-sm font-medium truncate">{photo.camera.full_name}</p>
-						<p class="text-gray-300 text-xs">{formatSol(photo.sol)} · {formatEarthDate(photo.earth_date)}</p>
+				<div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+					<div class="absolute bottom-0 left-0 right-0 p-3 space-y-1">
+						<p class="text-white/90 text-xs font-medium truncate">{photo.camera.full_name}</p>
+						<p class="text-white/50 text-[10px] tracking-wider">{formatSol(photo.sol)} · {formatEarthDate(photo.earth_date)}</p>
 					</div>
 				</div>
+
+				<!-- Corner accent on hover -->
+				<div class="absolute top-0 left-0 w-3 h-3 border-t border-l {cornerClass} opacity-0 group-hover:opacity-100 transition-opacity"></div>
+				<div class="absolute bottom-0 right-0 w-3 h-3 border-b border-r {cornerClass} opacity-0 group-hover:opacity-100 transition-opacity"></div>
 			</button>
 		{/each}
 	</div>

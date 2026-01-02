@@ -19,6 +19,7 @@
 		onCameraChange: (camera: string) => void;
 		onSearchChange: (search: string) => void;
 		onClearFilters: () => void;
+		accentColor?: string;
 	}
 
 	let {
@@ -38,7 +39,8 @@
 		onDateEndChange,
 		onCameraChange,
 		onSearchChange,
-		onClearFilters
+		onClearFilters,
+		accentColor = 'red'
 	}: Props = $props();
 
 	const cameras = $derived(ROVER_CAMERAS[rover] || []);
@@ -90,37 +92,70 @@
 		camera !== '' ||
 		search !== ''
 	);
+
+	// Dynamic focus classes based on accent color
+	const focusClass = $derived({
+		rose: 'focus:border-rose-500/50',
+		red: 'focus:border-red-500/50',
+		orange: 'focus:border-orange-500/50',
+		amber: 'focus:border-amber-500/50'
+	}[accentColor] || 'focus:border-red-500/50');
+
+	const radioBgClass = $derived({
+		rose: 'bg-rose-500',
+		red: 'bg-red-500',
+		orange: 'bg-orange-500',
+		amber: 'bg-amber-500'
+	}[accentColor] || 'bg-red-500');
+
+	const radioBorderClass = $derived({
+		rose: 'border-rose-500/50',
+		red: 'border-red-500/50',
+		orange: 'border-orange-500/50',
+		amber: 'border-amber-500/50'
+	}[accentColor] || 'border-red-500/50');
+
+	const textClass = $derived({
+		rose: 'text-rose-400/70 hover:text-rose-400',
+		red: 'text-red-400/70 hover:text-red-400',
+		orange: 'text-orange-400/70 hover:text-orange-400',
+		amber: 'text-amber-400/70 hover:text-amber-400'
+	}[accentColor] || 'text-red-400/70 hover:text-red-400');
 </script>
 
-<div class="bg-gray-900/50 rounded-xl p-4 space-y-4">
+<div class="bg-white/[0.02] border border-white/5 p-6 space-y-6">
 	<!-- Sol Filter -->
-	<div class="space-y-2">
+	<div class="space-y-3">
 		<div class="flex items-center gap-4">
-			<span class="text-gray-400 text-sm font-medium">Sol (Mars Day)</span>
-			<div class="flex items-center gap-2">
-				<label class="flex items-center gap-1 cursor-pointer">
-					<input
-						type="radio"
-						name="sol-mode"
-						checked={solMode === 'single'}
-						onchange={() => switchSolMode('single')}
-						class="text-orange-500 focus:ring-orange-500"
-					/>
-					<span class="text-gray-300 text-sm">Single</span>
-				</label>
-				<label class="flex items-center gap-1 cursor-pointer">
-					<input
-						type="radio"
-						name="sol-mode"
-						checked={solMode === 'range'}
-						onchange={() => switchSolMode('range')}
-						class="text-orange-500 focus:ring-orange-500"
-					/>
-					<span class="text-gray-300 text-sm">Range</span>
-				</label>
+			<span class="text-white/50 text-xs tracking-wider uppercase">Sol (Mars Day)</span>
+			<div class="flex items-center gap-3">
+				<button
+					type="button"
+					onclick={() => switchSolMode('single')}
+					class="flex items-center gap-1.5 cursor-pointer"
+				>
+					<span class="w-3 h-3 border {solMode === 'single' ? radioBorderClass : 'border-white/30'} flex items-center justify-center">
+						{#if solMode === 'single'}
+							<span class="w-1.5 h-1.5 {radioBgClass}"></span>
+						{/if}
+					</span>
+					<span class="text-white/40 text-xs tracking-wider uppercase">Single</span>
+				</button>
+				<button
+					type="button"
+					onclick={() => switchSolMode('range')}
+					class="flex items-center gap-1.5 cursor-pointer"
+				>
+					<span class="w-3 h-3 border {solMode === 'range' ? radioBorderClass : 'border-white/30'} flex items-center justify-center">
+						{#if solMode === 'range'}
+							<span class="w-1.5 h-1.5 {radioBgClass}"></span>
+						{/if}
+					</span>
+					<span class="text-white/40 text-xs tracking-wider uppercase">Range</span>
+				</button>
 			</div>
 			{#if maxSol > 0}
-				<span class="text-gray-500 text-xs">max: {maxSol.toLocaleString()}</span>
+				<span class="text-white/30 text-[10px] tracking-wider">max: {maxSol.toLocaleString()}</span>
 			{/if}
 		</div>
 
@@ -132,11 +167,10 @@
 				value={sol ?? ''}
 				oninput={(e) => handleSolInput(e, onSolChange)}
 				placeholder="Leave empty for latest"
-				class="w-full max-w-xs px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm
-					focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+				class="px-3 py-2 bg-white/[0.02] border border-white/10 text-white text-sm focus:outline-none {focusClass} transition-colors w-full max-w-xs"
 			/>
 		{:else}
-			<div class="flex items-center gap-2">
+			<div class="flex items-center gap-3">
 				<input
 					type="number"
 					min="0"
@@ -144,10 +178,9 @@
 					value={solMin ?? ''}
 					oninput={(e) => handleSolInput(e, onSolMinChange)}
 					placeholder="From"
-					class="w-32 px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm
-						focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+					class="px-3 py-2 bg-white/[0.02] border border-white/10 text-white text-sm focus:outline-none {focusClass} transition-colors w-28"
 				/>
-				<span class="text-gray-500">to</span>
+				<span class="text-white/30 text-xs">to</span>
 				<input
 					type="number"
 					min="0"
@@ -155,46 +188,42 @@
 					value={solMax ?? ''}
 					oninput={(e) => handleSolInput(e, onSolMaxChange)}
 					placeholder="To"
-					class="w-32 px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm
-						focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+					class="px-3 py-2 bg-white/[0.02] border border-white/10 text-white text-sm focus:outline-none {focusClass} transition-colors w-28"
 				/>
 			</div>
 		{/if}
 	</div>
 
 	<!-- Date Filter -->
-	<div class="space-y-2">
-		<span class="text-gray-400 text-sm font-medium">Earth Date Range</span>
-		<div class="flex flex-wrap items-center gap-2">
+	<div class="space-y-3">
+		<span class="text-white/50 text-xs tracking-wider uppercase">Earth Date Range</span>
+		<div class="flex flex-wrap items-center gap-3">
 			<input
 				type="date"
 				value={dateStart}
 				onchange={(e) => onDateStartChange((e.target as HTMLInputElement).value)}
-				class="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm
-					focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+				class="px-3 py-2 bg-white/[0.02] border border-white/10 text-white text-sm focus:outline-none {focusClass} transition-colors"
 			/>
-			<span class="text-gray-500">to</span>
+			<span class="text-white/30 text-xs">to</span>
 			<input
 				type="date"
 				value={dateEnd}
 				onchange={(e) => onDateEndChange((e.target as HTMLInputElement).value)}
-				class="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm
-					focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+				class="px-3 py-2 bg-white/[0.02] border border-white/10 text-white text-sm focus:outline-none {focusClass} transition-colors"
 			/>
 		</div>
 	</div>
 
 	<!-- Camera and Search Row -->
-	<div class="flex flex-wrap gap-4">
+	<div class="flex flex-wrap gap-6">
 		<!-- Camera Select -->
-		<div class="space-y-2">
-			<label for="camera-select" class="text-gray-400 text-sm font-medium">Camera</label>
+		<div class="space-y-3">
+			<label for="camera-select" class="text-white/50 text-xs tracking-wider uppercase">Camera</label>
 			<select
 				id="camera-select"
 				value={camera}
 				onchange={(e) => onCameraChange((e.target as HTMLSelectElement).value)}
-				class="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm
-					focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+				class="px-3 py-2 bg-white/[0.02] border border-white/10 text-white text-sm focus:outline-none {focusClass} transition-colors min-w-[160px]"
 			>
 				<option value="">All Cameras</option>
 				{#each cameras as cam}
@@ -204,11 +233,11 @@
 		</div>
 
 		<!-- Text Search -->
-		<div class="flex-1 min-w-[200px] space-y-2">
-			<label for="search-input" class="text-gray-400 text-sm font-medium">Text Search</label>
+		<div class="flex-1 min-w-[200px] space-y-3">
+			<label for="search-input" class="text-white/50 text-xs tracking-wider uppercase">Text Search</label>
 			{#if isMERRover}
-				<div class="text-gray-500 text-xs italic py-1.5">
-					Text search not available for legacy rovers (no metadata in archive)
+				<div class="text-white/30 text-xs italic py-2">
+					Text search not available for legacy rovers
 				</div>
 			{:else}
 				<input
@@ -217,16 +246,15 @@
 					value={search}
 					oninput={(e) => onSearchChange((e.target as HTMLInputElement).value)}
 					placeholder="Search captions, metadata..."
-					class="w-full px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm
-						focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+					class="px-3 py-2 bg-white/[0.02] border border-white/10 text-white text-sm focus:outline-none {focusClass} transition-colors w-full"
 				/>
-				<div class="flex flex-wrap gap-1.5">
-					<span class="text-gray-500 text-xs">Try:</span>
+				<div class="flex flex-wrap gap-2 items-center">
+					<span class="text-white/30 text-[10px] tracking-wider uppercase">Try:</span>
 					{#each searchExamples as example}
 						<button
 							type="button"
 							onclick={() => onSearchChange(example)}
-							class="text-xs text-orange-400 hover:text-orange-300 hover:underline transition-colors"
+							class="text-[10px] tracking-wider {textClass} transition-colors"
 						>
 							{example}
 						</button>
@@ -241,9 +269,9 @@
 		<button
 			type="button"
 			onclick={onClearFilters}
-			class="text-gray-400 hover:text-white text-sm underline transition-colors"
+			class="text-white/40 hover:text-white/70 text-xs tracking-wider uppercase transition-colors"
 		>
-			Clear all filters
+			[ Clear all filters ]
 		</button>
 	{/if}
 </div>

@@ -29,6 +29,16 @@
 	let page: number = $state(0);
 	let hasMore: boolean = $state(true);
 
+	// Rover color scheme
+	const roverColors: Record<RoverName, string> = {
+		perseverance: 'rose',
+		curiosity: 'red',
+		opportunity: 'orange',
+		spirit: 'amber'
+	};
+
+	let currentColor = $derived(roverColors[selectedRover]);
+
 	onMount(async () => {
 		if (maxSol === 0) {
 			await loadRoverInfo();
@@ -132,7 +142,7 @@
 </script>
 
 <svelte:head>
-	<title>Mars - Cosmic Mirror</title>
+	<title>Rovers - Cosmic Mirror</title>
 	<meta name="description" content="Browse photos from NASA's Mars rovers: Perseverance, Curiosity, Opportunity, and Spirit. Filter by sol, date, and camera." />
 </svelte:head>
 
@@ -144,16 +154,21 @@
 	<header class="relative z-10 border-b border-white/5">
 		<div class="max-w-7xl mx-auto px-8 py-4">
 			<div class="flex items-center justify-between">
-				<a href="/" class="flex items-center gap-3 text-white/40 hover:text-white/70 transition-colors group">
+				<a href="/" class="flex items-center gap-3 text-white/50 hover:text-white/80 transition-colors group">
 					<svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
 					</svg>
 					<span class="text-xs tracking-wider uppercase">Back</span>
 				</a>
 				<div class="flex items-center gap-4">
-					<span class="text-xs tracking-[0.2em] text-red-400/70 uppercase">Mars</span>
+					<span class="text-xs tracking-[0.2em] uppercase
+						{currentColor === 'rose' ? 'text-rose-400/70' : ''}
+						{currentColor === 'red' ? 'text-red-400/70' : ''}
+						{currentColor === 'orange' ? 'text-orange-400/70' : ''}
+						{currentColor === 'amber' ? 'text-amber-400/70' : ''}
+					">Rovers</span>
 					<div class="h-4 w-px bg-white/10"></div>
-					<span class="text-xs tracking-wider text-white/30 uppercase">Rover Imagery</span>
+					<span class="text-xs tracking-wider text-white/50 uppercase">Surface Exploration</span>
 				</div>
 				<div class="w-20"></div>
 			</div>
@@ -164,7 +179,12 @@
 		<!-- Rover Selector -->
 		<section class="space-y-4">
 			<div class="flex items-center gap-4">
-				<span class="text-[10px] tracking-[0.3em] text-red-400 uppercase">Select Rover</span>
+				<span class="text-[10px] tracking-[0.3em] uppercase
+					{currentColor === 'rose' ? 'text-rose-400' : ''}
+					{currentColor === 'red' ? 'text-red-400' : ''}
+					{currentColor === 'orange' ? 'text-orange-400' : ''}
+					{currentColor === 'amber' ? 'text-amber-400' : ''}
+				">Select Rover</span>
 				<div class="h-px flex-1 bg-white/5"></div>
 			</div>
 			<RoverSelector selected={selectedRover} onSelect={handleRoverChange} />
@@ -173,7 +193,7 @@
 		<!-- Filters -->
 		<section class="space-y-4">
 			<div class="flex items-center gap-4">
-				<span class="text-[10px] tracking-[0.3em] text-white/40 uppercase">Filters</span>
+				<span class="text-[10px] tracking-[0.3em] text-white/50 uppercase">Filters</span>
 				<div class="h-px flex-1 bg-white/5"></div>
 			</div>
 			<FilterPanel
@@ -194,13 +214,19 @@
 				onCameraChange={(c) => camera = c}
 				onSearchChange={(s) => search = s}
 				onClearFilters={clearFilters}
+				accentColor={currentColor}
 			/>
 		</section>
 
 		<!-- Search Button -->
 		<button
 			type="button"
-			class="px-6 py-2.5 bg-red-500/20 border border-red-500/30 hover:border-red-500/50 hover:bg-red-500/30 text-red-400 text-xs tracking-wider uppercase transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+			class="px-6 py-2.5 text-xs tracking-wider uppercase transition-all disabled:opacity-50 disabled:cursor-not-allowed
+				{currentColor === 'rose' ? 'bg-rose-500/20 border border-rose-500/30 hover:border-rose-500/50 hover:bg-rose-500/30 text-rose-400' : ''}
+				{currentColor === 'red' ? 'bg-red-500/20 border border-red-500/30 hover:border-red-500/50 hover:bg-red-500/30 text-red-400' : ''}
+				{currentColor === 'orange' ? 'bg-orange-500/20 border border-orange-500/30 hover:border-orange-500/50 hover:bg-orange-500/30 text-orange-400' : ''}
+				{currentColor === 'amber' ? 'bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/30 text-amber-400' : ''}
+			"
 			onclick={searchPhotos}
 			disabled={loadingPhotos}
 		>
@@ -217,9 +243,9 @@
 		<!-- Results -->
 		<section class="space-y-6">
 			<div class="flex items-center gap-4">
-				<span class="text-[10px] tracking-[0.3em] text-white/40 uppercase">Results</span>
+				<span class="text-[10px] tracking-[0.3em] text-white/50 uppercase">Results</span>
 				<div class="h-px flex-1 bg-white/5"></div>
-				<span class="text-[10px] tracking-wider text-white/30">
+				<span class="text-[10px] tracking-wider text-white/50">
 					{#if photos.length > 0}
 						{photos.length} photos · {selectedRover.charAt(0).toUpperCase() + selectedRover.slice(1)}
 					{:else}
@@ -228,7 +254,7 @@
 				</span>
 			</div>
 
-			<PhotoGrid {photos} onPhotoClick={handlePhotoClick} />
+			<PhotoGrid {photos} onPhotoClick={handlePhotoClick} accentColor={currentColor} />
 
 			<!-- Load More -->
 			{#if hasMore && photos.length > 0}
@@ -249,8 +275,13 @@
 	<!-- Footer -->
 	<footer class="relative z-10 border-t border-white/5 mt-12">
 		<div class="max-w-7xl mx-auto px-8 py-6">
-			<p class="text-xs tracking-wider text-white/30 text-center">
-				Data: <a href="https://mars.nasa.gov" target="_blank" rel="noopener noreferrer" class="text-red-400/50 hover:text-red-400/70 transition-colors">NASA Mars Exploration</a>
+			<p class="text-xs tracking-wider text-white/50 text-center">
+				Data: <a href="https://mars.nasa.gov" target="_blank" rel="noopener noreferrer" class="
+					{currentColor === 'rose' ? 'text-rose-400/50 hover:text-rose-400/70' : ''}
+					{currentColor === 'red' ? 'text-red-400/50 hover:text-red-400/70' : ''}
+					{currentColor === 'orange' ? 'text-orange-400/50 hover:text-orange-400/70' : ''}
+					{currentColor === 'amber' ? 'text-amber-400/50 hover:text-amber-400/70' : ''}
+					transition-colors">NASA Mars Exploration</a>
 			</p>
 		</div>
 	</footer>

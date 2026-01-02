@@ -30,16 +30,16 @@
 	<header class="relative z-10 border-b border-white/5">
 		<div class="max-w-7xl mx-auto px-8 py-4">
 			<div class="flex items-center justify-between">
-				<a href="/" class="flex items-center gap-3 text-white/40 hover:text-white/70 transition-colors group">
+				<a href="/" class="flex items-center gap-3 text-white/50 hover:text-white/80 transition-colors group">
 					<svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
 					</svg>
 					<span class="text-xs tracking-wider uppercase">Back</span>
 				</a>
 				<div class="flex items-center gap-4">
-					<span class="text-xs tracking-[0.2em] text-amber-400/70 uppercase">APOD</span>
+					<span class="text-xs tracking-[0.2em] text-apod uppercase">APOD</span>
 					<div class="h-4 w-px bg-white/10"></div>
-					<span class="text-xs tracking-wider text-white/30 uppercase">Astronomy Picture of the Day</span>
+					<span class="text-xs tracking-wider text-white/50 uppercase">Astronomy Picture of the Day</span>
 				</div>
 				<div class="w-20"></div>
 			</div>
@@ -51,21 +51,21 @@
 		{#if todayApod}
 			<section class="space-y-4">
 				<div class="flex items-center gap-4">
-					<span class="text-[10px] tracking-[0.3em] text-amber-400 uppercase">Today's Image</span>
+					<span class="text-[10px] tracking-[0.3em] text-apod uppercase">Today's Image</span>
 					<div class="h-px flex-1 bg-white/5"></div>
-					<span class="text-[10px] tracking-wider text-white/30">{todayApod.date}</span>
+					<span class="text-[10px] tracking-wider text-white/50">{todayApod.date}</span>
 				</div>
 
 				<button
 					type="button"
-					class="relative w-full overflow-hidden bg-white/[0.02] border border-amber-500/20 hover:border-amber-500/40 cursor-pointer group text-left transition-all duration-300"
+					class="relative w-full overflow-hidden bg-white/[0.02] border border-apod/20 hover:border-apod/40 cursor-pointer group text-left transition-all duration-300"
 					onclick={() => handleImageClick(todayApod!)}
 				>
 					<!-- Corner accents -->
-					<div class="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-amber-500/50"></div>
-					<div class="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-amber-500/50"></div>
-					<div class="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-amber-500/50"></div>
-					<div class="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-amber-500/50"></div>
+					<div class="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-apod/50"></div>
+					<div class="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-apod/50"></div>
+					<div class="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-apod/50"></div>
+					<div class="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-apod/50"></div>
 
 					<div class="aspect-video md:aspect-[21/9] relative">
 						<img
@@ -77,9 +77,9 @@
 						<div class="absolute bottom-0 left-0 right-0 p-8">
 							<div class="space-y-3">
 								<h3 class="text-white text-2xl md:text-3xl font-light tracking-wide">{todayApod.title}</h3>
-								<p class="text-white/50 text-sm leading-relaxed line-clamp-2 max-w-3xl">{todayApod.description}</p>
+								<p class="text-white/60 text-sm leading-relaxed line-clamp-2 max-w-3xl">{todayApod.description}</p>
 								{#if todayApod.credits}
-									<p class="text-white/30 text-xs tracking-wider uppercase">Credit: {todayApod.credits}</p>
+									<p class="text-white/50 text-xs tracking-wider uppercase">Credit: {todayApod.credits}</p>
 								{/if}
 							</div>
 						</div>
@@ -97,9 +97,9 @@
 		{#if recentApod.length > 0}
 			<section class="space-y-6">
 				<div class="flex items-center gap-4">
-					<span class="text-[10px] tracking-[0.3em] text-white/40 uppercase">Archive</span>
+					<span class="text-[10px] tracking-[0.3em] text-white/50 uppercase">Archive</span>
 					<div class="h-px flex-1 bg-white/5"></div>
-					<span class="text-[10px] tracking-wider text-white/30">{recentApod.length - 1} images</span>
+					<span class="text-[10px] tracking-wider text-white/50">{recentApod.length - 1} images</span>
 				</div>
 
 				<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -117,14 +117,14 @@
 							/>
 							<div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
 								<div class="absolute bottom-0 left-0 right-0 p-3 space-y-1">
-									<p class="text-white/50 text-[10px] tracking-wider">{image.date}</p>
+									<p class="text-white/60 text-[10px] tracking-wider">{image.date}</p>
 									<p class="text-white/90 text-xs font-medium line-clamp-2">{image.title}</p>
 								</div>
 							</div>
 
 							<!-- Corner accent on hover -->
-							<div class="absolute top-0 left-0 w-3 h-3 border-t border-l border-amber-500/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-							<div class="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-amber-500/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+							<div class="absolute top-0 left-0 w-3 h-3 border-t border-l border-apod/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+							<div class="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-apod/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 						</button>
 					{/each}
 				</div>
@@ -135,8 +135,8 @@
 	<!-- Footer -->
 	<footer class="relative z-10 border-t border-white/5 mt-12">
 		<div class="max-w-7xl mx-auto px-8 py-6">
-			<p class="text-xs tracking-wider text-white/30 text-center">
-				Data: <a href="https://apod.nasa.gov" target="_blank" rel="noopener noreferrer" class="text-amber-400/50 hover:text-amber-400/70 transition-colors">NASA APOD</a>
+			<p class="text-xs tracking-wider text-white/50 text-center">
+				Data: <a href="https://apod.nasa.gov" target="_blank" rel="noopener noreferrer" class="text-apod/70 hover:text-apod transition-colors">NASA APOD</a>
 			</p>
 		</div>
 	</footer>

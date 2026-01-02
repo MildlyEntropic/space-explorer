@@ -27,7 +27,7 @@ export {};
 
 declare module "$app/types" {
 	export interface AppTypes {
-		RouteId(): "/" | "/api" | "/api/mer-image" | "/api/mer" | "/apod" | "/epic" | "/mars" | "/telescopes";
+		RouteId(): "/" | "/api" | "/api/mer-image" | "/api/mer" | "/api/observatories" | "/api/probes" | "/apod" | "/education" | "/observatories" | "/probes" | "/rovers";
 		RouteParams(): {
 			
 		};
@@ -36,12 +36,15 @@ declare module "$app/types" {
 			"/api": Record<string, never>;
 			"/api/mer-image": Record<string, never>;
 			"/api/mer": Record<string, never>;
+			"/api/observatories": Record<string, never>;
+			"/api/probes": Record<string, never>;
 			"/apod": Record<string, never>;
-			"/epic": Record<string, never>;
-			"/mars": Record<string, never>;
-			"/telescopes": Record<string, never>
+			"/education": Record<string, never>;
+			"/observatories": Record<string, never>;
+			"/probes": Record<string, never>;
+			"/rovers": Record<string, never>
 		};
-		Pathname(): "/" | "/api" | "/api/" | "/api/mer-image" | "/api/mer-image/" | "/api/mer" | "/api/mer/" | "/apod" | "/apod/" | "/epic" | "/epic/" | "/mars" | "/mars/" | "/telescopes" | "/telescopes/";
+		Pathname(): "/" | "/api" | "/api/" | "/api/mer-image" | "/api/mer-image/" | "/api/mer" | "/api/mer/" | "/api/observatories" | "/api/observatories/" | "/api/probes" | "/api/probes/" | "/apod" | "/apod/" | "/education" | "/education/" | "/observatories" | "/observatories/" | "/probes" | "/probes/" | "/rovers" | "/rovers/";
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
 		Asset(): "/og-image.svg" | "/robots.txt" | "/sitemap.xml" | string & {};
 	}

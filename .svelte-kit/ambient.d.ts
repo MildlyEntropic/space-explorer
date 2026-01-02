@@ -26,6 +26,7 @@
  * ```
  */
 declare module '$env/static/private' {
+	export const NASA_API_KEY: string;
 	export const LESSOPEN: string;
 	export const VSCODE_CWD: string;
 	export const VSCODE_ESM_ENTRYPOINT: string;
@@ -167,6 +168,7 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
+		NASA_API_KEY: string;
 		LESSOPEN: string;
 		VSCODE_CWD: string;
 		VSCODE_ESM_ENTRYPOINT: string;

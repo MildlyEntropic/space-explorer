@@ -162,15 +162,106 @@ export const ROVER_CAMERAS: Record<RoverName, { abbrev: string; full_name: strin
 	]
 };
 
-export const ROVERS: {
+export interface RoverInfo {
 	name: RoverName;
 	displayName: string;
 	active: boolean;
 	available: boolean;
 	dateRange: string;
-}[] = [
-	{ name: 'perseverance', displayName: 'Perseverance', active: true, available: true, dateRange: 'Feb 2021 - Present' },
-	{ name: 'curiosity', displayName: 'Curiosity', active: true, available: true, dateRange: 'Aug 2012 - Present' },
-	{ name: 'opportunity', displayName: 'Opportunity', active: false, available: true, dateRange: 'Jan 2004 - Jun 2018' },
-	{ name: 'spirit', displayName: 'Spirit', active: false, available: true, dateRange: 'Jan 2004 - Mar 2010' }
+	launchDate: string;
+	landingDate: string;
+	landingSite: string;
+	status: string;
+	mission: string;
+	mass: string;
+	power: string;
+	topSpeed: string;
+	distance?: string;
+	highlights: string[];
+}
+
+export const ROVERS: RoverInfo[] = [
+	{
+		name: 'perseverance',
+		displayName: 'Perseverance',
+		active: true,
+		available: true,
+		dateRange: 'Feb 2021 - Present',
+		launchDate: 'Jul 30, 2020',
+		landingDate: 'Feb 18, 2021',
+		landingSite: 'Jezero Crater',
+		status: 'ACTIVE',
+		mission: 'Mars 2020',
+		mass: '1,025 kg',
+		power: 'MMRTG Nuclear',
+		topSpeed: '152 m/hr',
+		highlights: [
+			'First Mars helicopter (Ingenuity)',
+			'Sample caching for future return',
+			'MOXIE oxygen production experiment'
+		]
+	},
+	{
+		name: 'curiosity',
+		displayName: 'Curiosity',
+		active: true,
+		available: true,
+		dateRange: 'Aug 2012 - Present',
+		launchDate: 'Nov 26, 2011',
+		landingDate: 'Aug 6, 2012',
+		landingSite: 'Gale Crater',
+		status: 'ACTIVE',
+		mission: 'Mars Science Laboratory',
+		mass: '899 kg',
+		power: 'MMRTG Nuclear',
+		topSpeed: '144 m/hr',
+		distance: '32+ km traveled',
+		highlights: [
+			'Found ancient streambed evidence',
+			'Detected organic molecules',
+			'Climbing Mount Sharp since 2014'
+		]
+	},
+	{
+		name: 'opportunity',
+		displayName: 'Opportunity',
+		active: false,
+		available: true,
+		dateRange: 'Jan 2004 - Jun 2018',
+		launchDate: 'Jul 7, 2003',
+		landingDate: 'Jan 25, 2004',
+		landingSite: 'Meridiani Planum',
+		status: 'MISSION COMPLETE',
+		mission: 'Mars Exploration Rover B',
+		mass: '185 kg',
+		power: 'Solar Panels',
+		topSpeed: '180 m/hr',
+		distance: '45.16 km (Mars record)',
+		highlights: [
+			'90-day mission lasted 14+ years',
+			'Found hematite "blueberries"',
+			'Survived 2007 dust storm'
+		]
+	},
+	{
+		name: 'spirit',
+		displayName: 'Spirit',
+		active: false,
+		available: true,
+		dateRange: 'Jan 2004 - Mar 2010',
+		launchDate: 'Jun 10, 2003',
+		landingDate: 'Jan 4, 2004',
+		landingSite: 'Gusev Crater',
+		status: 'MISSION COMPLETE',
+		mission: 'Mars Exploration Rover A',
+		mass: '185 kg',
+		power: 'Solar Panels',
+		topSpeed: '180 m/hr',
+		distance: '7.73 km',
+		highlights: [
+			'First rover to climb a Martian hill',
+			'Found silica deposits (hot springs)',
+			'Operated as stationary platform after 2009'
+		]
+	}
 ];

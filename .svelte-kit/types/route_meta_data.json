@@ -6,16 +6,23 @@
 	"/api/mer": [
 		"src/routes/api/mer/+server.ts"
 	],
+	"/api/observatories": [
+		"src/routes/api/observatories/+server.ts"
+	],
+	"/api/probes": [
+		"src/routes/api/probes/+server.ts"
+	],
 	"/apod": [
 		"src/routes/apod/+page.server.ts"
 	],
-	"/epic": [
-		"src/routes/epic/+page.server.ts"
+	"/education": [],
+	"/observatories": [
+		"src/routes/observatories/+page.server.ts"
 	],
-	"/mars": [
-		"src/routes/mars/+page.server.ts"
+	"/probes": [
+		"src/routes/probes/+page.server.ts"
 	],
-	"/telescopes": [
-		"src/routes/telescopes/+page.server.ts"
+	"/rovers": [
+		"src/routes/rovers/+page.server.ts"
 	]
 }

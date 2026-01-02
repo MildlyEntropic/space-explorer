@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 
+@theme {
+	--color-apod: #169b62;
+}
+
 :root {
 	--color-mars-orange: #c1440e;
 	--color-mars-rust: #8b2500;
