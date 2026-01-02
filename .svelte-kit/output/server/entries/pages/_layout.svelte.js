@@ -8,14 +8,14 @@ const favicon = "data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%
 function _layout($$renderer, $$props) {
   let { children } = $$props;
   const siteUrl = "https://mars-expolorer.vercel.app";
-  const siteName = "Mars Explorer";
-  const siteDescription = "Browse and explore thousands of real photos from NASA Mars rovers including Perseverance, Curiosity, Opportunity, and Spirit. Filter by sol, date, and camera. Free access to NASA JPL imagery.";
-  const siteKeywords = "Mars, NASA, rover, Perseverance, Curiosity, Opportunity, Spirit, Mars photos, space exploration, NASA images, Mars rover photos, red planet, JPL, Mars mission, astronomy, space photography";
+  const siteName = "Space Explorer";
+  const siteDescription = "Explore NASA imagery from Mars rovers, James Webb Space Telescope, Hubble, and Astronomy Picture of the Day. Browse thousands of real photos from Perseverance, Curiosity, JWST, and more.";
+  const siteKeywords = "NASA, space, Mars, rover, Perseverance, Curiosity, JWST, James Webb, Hubble, APOD, space telescope, astronomy, space photos, NASA images, space exploration, Mars photos, deep space, galaxies, nebula";
   head("12qhfyh", $$renderer, ($$renderer2) => {
     $$renderer2.title(($$renderer3) => {
-      $$renderer3.push(`<title>Mars Explorer - NASA Mars Rover Photos</title>`);
+      $$renderer3.push(`<title>Space Explorer - NASA Space Imagery</title>`);
     });
-    $$renderer2.push(`<meta name="title"${attr("content", `${stringify(siteName)} - NASA Mars Rover Photos`)}/> <meta name="description"${attr("content", siteDescription)}/> <meta name="keywords"${attr("content", siteKeywords)}/> <meta name="author" content="Mars Explorer"/> <meta name="robots" content="index, follow"/> <meta name="language" content="English"/> <meta name="revisit-after" content="1 days"/> <link rel="icon"${attr("href", favicon)}/> <link rel="icon" type="image/svg+xml"${attr("href", favicon)}/> <link rel="canonical"${attr("href", siteUrl)}/> <meta property="og:type" content="website"/> <meta property="og:url"${attr("content", siteUrl)}/> <meta property="og:title"${attr("content", `${stringify(siteName)} - NASA Mars Rover Photos`)}/> <meta property="og:description"${attr("content", siteDescription)}/> <meta property="og:image"${attr("content", `${stringify(siteUrl)}/og-image.svg`)}/> <meta property="og:image:width" content="1200"/> <meta property="og:image:height" content="630"/> <meta property="og:site_name"${attr("content", siteName)}/> <meta property="og:locale" content="en_US"/> <meta name="twitter:card" content="summary_large_image"/> <meta name="twitter:url"${attr("content", siteUrl)}/> <meta name="twitter:title"${attr("content", `${stringify(siteName)} - NASA Mars Rover Photos`)}/> <meta name="twitter:description"${attr("content", siteDescription)}/> <meta name="twitter:image"${attr("content", `${stringify(siteUrl)}/og-image.svg`)}/> <meta name="theme-color" content="#111827"/> <meta name="apple-mobile-web-app-capable" content="yes"/> <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/> <meta name="apple-mobile-web-app-title"${attr("content", siteName)}/> ${html(`<script type="application/ld+json">
+    $$renderer2.push(`<meta name="title"${attr("content", `${stringify(siteName)} - NASA Space Imagery`)}/> <meta name="description"${attr("content", siteDescription)}/> <meta name="keywords"${attr("content", siteKeywords)}/> <meta name="author" content="Space Explorer"/> <meta name="robots" content="index, follow"/> <meta name="language" content="English"/> <meta name="revisit-after" content="1 days"/> <link rel="icon"${attr("href", favicon)}/> <link rel="icon" type="image/svg+xml"${attr("href", favicon)}/> <link rel="canonical"${attr("href", siteUrl)}/> <meta property="og:type" content="website"/> <meta property="og:url"${attr("content", siteUrl)}/> <meta property="og:title"${attr("content", `${stringify(siteName)} - NASA Space Imagery`)}/> <meta property="og:description"${attr("content", siteDescription)}/> <meta property="og:image"${attr("content", `${stringify(siteUrl)}/og-image.svg`)}/> <meta property="og:image:width" content="1200"/> <meta property="og:image:height" content="630"/> <meta property="og:site_name"${attr("content", siteName)}/> <meta property="og:locale" content="en_US"/> <meta name="twitter:card" content="summary_large_image"/> <meta name="twitter:url"${attr("content", siteUrl)}/> <meta name="twitter:title"${attr("content", `${stringify(siteName)} - NASA Space Imagery`)}/> <meta name="twitter:description"${attr("content", siteDescription)}/> <meta name="twitter:image"${attr("content", `${stringify(siteUrl)}/og-image.svg`)}/> <meta name="theme-color" content="#111827"/> <meta name="apple-mobile-web-app-capable" content="yes"/> <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/> <meta name="apple-mobile-web-app-title"${attr("content", siteName)}/> ${html(`<script type="application/ld+json">
 	{
 		"@context": "https://schema.org",
 		"@type": "WebApplication",
@@ -31,7 +31,7 @@ function _layout($$renderer, $$props) {
 		},
 		"author": {
 			"@type": "Organization",
-			"name": "Mars Explorer"
+			"name": "Space Explorer"
 		},
 		"provider": {
 			"@type": "Organization",
@@ -40,8 +40,8 @@ function _layout($$renderer, $$props) {
 		},
 		"about": {
 			"@type": "Thing",
-			"name": "Mars",
-			"description": "The fourth planet from the Sun"
+			"name": "Space Exploration",
+			"description": "NASA imagery from Mars rovers, James Webb Space Telescope, Hubble, and APOD"
 		},
 		"keywords": "${siteKeywords}"
 	}

@@ -5,18 +5,18 @@
 	let { children } = $props();
 
 	const siteUrl = 'https://mars-expolorer.vercel.app';
-	const siteName = 'Mars Explorer';
-	const siteDescription = 'Browse and explore thousands of real photos from NASA Mars rovers including Perseverance, Curiosity, Opportunity, and Spirit. Filter by sol, date, and camera. Free access to NASA JPL imagery.';
-	const siteKeywords = 'Mars, NASA, rover, Perseverance, Curiosity, Opportunity, Spirit, Mars photos, space exploration, NASA images, Mars rover photos, red planet, JPL, Mars mission, astronomy, space photography';
+	const siteName = 'Space Explorer';
+	const siteDescription = 'Explore NASA imagery from Mars rovers, James Webb Space Telescope, Hubble, and Astronomy Picture of the Day. Browse thousands of real photos from Perseverance, Curiosity, JWST, and more.';
+	const siteKeywords = 'NASA, space, Mars, rover, Perseverance, Curiosity, JWST, James Webb, Hubble, APOD, space telescope, astronomy, space photos, NASA images, space exploration, Mars photos, deep space, galaxies, nebula';
 </script>
 
 <svelte:head>
 	<!-- Primary Meta Tags -->
-	<title>{siteName} - NASA Mars Rover Photos</title>
-	<meta name="title" content="{siteName} - NASA Mars Rover Photos" />
+	<title>{siteName} - NASA Space Imagery</title>
+	<meta name="title" content="{siteName} - NASA Space Imagery" />
 	<meta name="description" content={siteDescription} />
 	<meta name="keywords" content={siteKeywords} />
-	<meta name="author" content="Mars Explorer" />
+	<meta name="author" content="Space Explorer" />
 	<meta name="robots" content="index, follow" />
 	<meta name="language" content="English" />
 	<meta name="revisit-after" content="1 days" />
@@ -31,7 +31,7 @@
 	<!-- Open Graph / Facebook -->
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content={siteUrl} />
-	<meta property="og:title" content="{siteName} - NASA Mars Rover Photos" />
+	<meta property="og:title" content="{siteName} - NASA Space Imagery" />
 	<meta property="og:description" content={siteDescription} />
 	<meta property="og:image" content="{siteUrl}/og-image.svg" />
 	<meta property="og:image:width" content="1200" />
@@ -42,7 +42,7 @@
 	<!-- Twitter -->
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:url" content={siteUrl} />
-	<meta name="twitter:title" content="{siteName} - NASA Mars Rover Photos" />
+	<meta name="twitter:title" content="{siteName} - NASA Space Imagery" />
 	<meta name="twitter:description" content={siteDescription} />
 	<meta name="twitter:image" content="{siteUrl}/og-image.svg" />
 
@@ -69,7 +69,7 @@
 		},
 		"author": {
 			"@type": "Organization",
-			"name": "Mars Explorer"
+			"name": "Space Explorer"
 		},
 		"provider": {
 			"@type": "Organization",
@@ -78,8 +78,8 @@
 		},
 		"about": {
 			"@type": "Thing",
-			"name": "Mars",
-			"description": "The fourth planet from the Sun"
+			"name": "Space Exploration",
+			"description": "NASA imagery from Mars rovers, James Webb Space Telescope, Hubble, and APOD"
 		},
 		"keywords": "${siteKeywords}"
 	}
