@@ -27,7 +27,7 @@ export {};
 
 declare module "$app/types" {
 	export interface AppTypes {
-		RouteId(): "/" | "/api" | "/api/mer-image" | "/api/mer";
+		RouteId(): "/" | "/api" | "/api/mer-image" | "/api/mer" | "/mars" | "/telescopes";
 		RouteParams(): {
 			
 		};
@@ -35,10 +35,12 @@ declare module "$app/types" {
 			"/": Record<string, never>;
 			"/api": Record<string, never>;
 			"/api/mer-image": Record<string, never>;
-			"/api/mer": Record<string, never>
+			"/api/mer": Record<string, never>;
+			"/mars": Record<string, never>;
+			"/telescopes": Record<string, never>
 		};
-		Pathname(): "/" | "/api" | "/api/" | "/api/mer-image" | "/api/mer-image/" | "/api/mer" | "/api/mer/";
+		Pathname(): "/" | "/api" | "/api/" | "/api/mer-image" | "/api/mer-image/" | "/api/mer" | "/api/mer/" | "/mars" | "/mars/" | "/telescopes" | "/telescopes/";
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
-		Asset(): "/robots.txt" | string & {};
+		Asset(): "/og-image.svg" | "/robots.txt" | "/sitemap.xml" | string & {};
 	}
 }

@@ -1,147 +1,34 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import type { Photo, RoverName } from '$lib/types/mars';
-	import { fetchLatestPhotos, fetchPhotos, fetchRoverInfo } from '$lib/api/nasa';
-	import PhotoGrid from '$lib/components/PhotoGrid.svelte';
+	import type { Photo, SpaceImage } from '$lib/types/mars';
+	import { formatSol } from '$lib/api/nasa';
 	import Lightbox from '$lib/components/Lightbox.svelte';
-	import RoverSelector from '$lib/components/RoverSelector.svelte';
-	import FilterPanel from '$lib/components/FilterPanel.svelte';
-	import LatestPhotos from '$lib/components/LatestPhotos.svelte';
-	import SupportSidebar from '$lib/components/SupportSidebar.svelte';
 	import AdPlaceholder from '$lib/components/AdPlaceholder.svelte';
 
-	// State
-	let selectedRover: RoverName = $state('perseverance');
-	let sol: number | null = $state(null);
-	let solMin: number | null = $state(null);
-	let solMax: number | null = $state(null);
-	let dateStart: string = $state('');
-	let dateEnd: string = $state('');
-	let camera: string = $state('');
-	let search: string = $state('');
-	let maxSol: number = $state(0);
+	let { data } = $props();
 
-	let latestPhotos: Photo[] = $state([]);
-	let photos: Photo[] = $state([]);
+	// SSR data
+	let latestPhotos: Photo[] = $state(data.latestPhotos || []);
+	let apod: SpaceImage | null = $state(data.apod || null);
+	let jwstImages: SpaceImage[] = $state(data.jwstImages || []);
+	let hubbleImages: SpaceImage[] = $state(data.hubbleImages || []);
+
+	// Lightbox state
 	let selectedPhoto: Photo | null = $state(null);
+	let selectedSpaceImage: SpaceImage | null = $state(null);
 
-	let loadingLatest: boolean = $state(true);
-	let loadingPhotos: boolean = $state(false);
-	let error: string | null = $state(null);
-
-	let page: number = $state(0);
-	let hasMore: boolean = $state(true);
-
-	// Fetch latest photos on mount
-	onMount(async () => {
-		await loadLatestPhotos();
-		await loadRoverInfo();
-	});
-
-	async function loadLatestPhotos() {
-		loadingLatest = true;
-		try {
-			latestPhotos = await fetchLatestPhotos('perseverance');
-		} catch (e) {
-			console.error('Failed to load latest photos:', e);
-		} finally {
-			loadingLatest = false;
-		}
-	}
-
-	async function loadRoverInfo() {
-		try {
-			const rover = await fetchRoverInfo(selectedRover);
-			maxSol = rover.max_sol;
-		} catch (e) {
-			console.error('Failed to load rover info:', e);
-		}
-	}
-
-	function getSearchOptions() {
-		return {
-			rover: selectedRover,
-			sol: sol ?? undefined,
-			solMin: solMin ?? undefined,
-			solMax: solMax ?? undefined,
-			dateStart: dateStart || undefined,
-			dateEnd: dateEnd || undefined,
-			camera: camera || undefined,
-			search: search || undefined
-		};
-	}
-
-	async function searchPhotos() {
-		loadingPhotos = true;
-		error = null;
-		page = 0;
-		hasMore = true;
-
-		try {
-			photos = await fetchPhotos({
-				...getSearchOptions(),
-				page: 0
-			});
-
-			if (photos.length < 25) {
-				hasMore = false;
-			}
-		} catch (e) {
-			error = e instanceof Error ? e.message : 'Failed to load photos';
-			photos = [];
-		} finally {
-			loadingPhotos = false;
-		}
-	}
-
-	async function loadMore() {
-		if (loadingPhotos || !hasMore) return;
-
-		loadingPhotos = true;
-		page += 1;
-
-		try {
-			const morePhotos = await fetchPhotos({
-				...getSearchOptions(),
-				page
-			});
-
-			if (morePhotos.length < 25) {
-				hasMore = false;
-			}
-
-			photos = [...photos, ...morePhotos];
-		} catch (e) {
-			error = e instanceof Error ? e.message : 'Failed to load more photos';
-		} finally {
-			loadingPhotos = false;
-		}
-	}
-
-	function handleRoverChange(rover: RoverName) {
-		selectedRover = rover;
-		camera = '';
-		photos = [];
-		error = null;
-		loadRoverInfo();
-	}
+	let contentLoaded = $derived(latestPhotos.length > 0 || jwstImages.length > 0 || hubbleImages.length > 0);
 
 	function handlePhotoClick(photo: Photo) {
 		selectedPhoto = photo;
 	}
 
-	function closeLightbox() {
-		selectedPhoto = null;
+	function handleSpaceImageClick(image: SpaceImage) {
+		selectedSpaceImage = image;
 	}
 
-	function clearFilters() {
-		sol = null;
-		solMin = null;
-		solMax = null;
-		dateStart = '';
-		dateEnd = '';
-		camera = '';
-		search = '';
+	function closeLightbox() {
+		selectedPhoto = null;
+		selectedSpaceImage = null;
 	}
 </script>
 
@@ -149,117 +36,278 @@
 	<!-- Header -->
 	<header class="border-b border-gray-800 bg-gray-950/80 backdrop-blur-sm sticky top-0 z-40">
 		<div class="max-w-7xl mx-auto px-4 py-4">
-			<div class="flex items-center gap-3">
-				<div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center">
-					<span class="text-white text-lg">🔴</span>
+			<div class="flex items-center justify-between">
+				<div class="flex items-center gap-3">
+					<div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
+						<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+						</svg>
+					</div>
+					<div>
+						<h1 class="text-xl font-bold text-white">Space Explorer</h1>
+						<p class="text-gray-400 text-sm">NASA Rovers, JWST, Hubble & APOD</p>
+					</div>
 				</div>
-				<div>
-					<h1 class="text-xl font-bold text-white">Mars Explorer</h1>
-					<p class="text-gray-400 text-sm">Browse NASA rover imagery</p>
-				</div>
+				<nav class="flex items-center gap-4">
+					<a href="/mars" class="text-gray-400 hover:text-white transition-colors text-sm">Mars Rovers</a>
+					<a href="/telescopes" class="text-gray-400 hover:text-white transition-colors text-sm">Telescopes</a>
+				</nav>
 			</div>
 		</div>
 	</header>
 
-	<main class="max-w-7xl mx-auto px-4 py-8 space-y-10">
-		<!-- Latest Photos Section -->
-		<LatestPhotos
-			photos={latestPhotos}
-			loading={loadingLatest}
-			onPhotoClick={handlePhotoClick}
-		/>
-
-		<!-- Divider -->
-		<div class="border-t border-gray-800"></div>
-
-		<!-- Browse Section with Sidebar -->
-		<div class="flex gap-8">
-			<!-- Main Content -->
-			<section class="flex-1 min-w-0 space-y-6">
-				<h2 class="text-2xl font-bold text-white">Browse Photos</h2>
-
-				<!-- Rover Selector -->
-				<div>
-					<p class="text-gray-400 text-sm mb-2">Select Rover</p>
-					<RoverSelector selected={selectedRover} onSelect={handleRoverChange} />
+	<main class="max-w-7xl mx-auto px-4 py-8 space-y-12">
+		<!-- APOD Section -->
+		{#if apod}
+			<section class="space-y-4">
+				<div class="flex items-center justify-between">
+					<div class="flex items-center gap-2">
+						<div class="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center">
+							<svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+								<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+							</svg>
+						</div>
+						<h2 class="text-2xl font-bold text-white">Astronomy Picture of the Day</h2>
+					</div>
 				</div>
-
-				<!-- Filters -->
-				<FilterPanel
-					rover={selectedRover}
-					{sol}
-					{solMin}
-					{solMax}
-					{dateStart}
-					{dateEnd}
-					{camera}
-					{search}
-					{maxSol}
-					onSolChange={(s) => sol = s}
-					onSolMinChange={(s) => solMin = s}
-					onSolMaxChange={(s) => solMax = s}
-					onDateStartChange={(d) => dateStart = d}
-					onDateEndChange={(d) => dateEnd = d}
-					onCameraChange={(c) => camera = c}
-					onSearchChange={(s) => search = s}
-					onClearFilters={clearFilters}
-				/>
-
-				<!-- Search Button -->
 				<button
 					type="button"
-					class="px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-					onclick={searchPhotos}
-					disabled={loadingPhotos}
+					class="relative w-full overflow-hidden rounded-xl bg-gray-800 cursor-pointer group text-left"
+					onclick={() => handleSpaceImageClick(apod)}
 				>
-					{loadingPhotos ? 'Loading...' : 'Search Photos'}
-				</button>
-
-				<!-- Error Message -->
-				{#if error}
-					<div class="bg-red-900/30 border border-red-800 text-red-200 px-4 py-3 rounded-lg">
-						{error}
-					</div>
-				{/if}
-
-				<!-- Results -->
-				{#if photos.length > 0 || loadingPhotos}
-					<div class="space-y-6">
-						<p class="text-gray-400">
-							{#if photos.length > 0}
-								Showing {photos.length} photos
+					<div class="aspect-video md:aspect-[21/9] relative">
+						<img
+							src={apod.img_src}
+							alt={apod.title}
+							class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+						/>
+						<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+						<div class="absolute bottom-0 left-0 right-0 p-6">
+							<p class="text-yellow-400 text-sm font-medium mb-1">{apod.date}</p>
+							<h3 class="text-white text-xl md:text-2xl font-bold mb-2">{apod.title}</h3>
+							<p class="text-gray-300 text-sm line-clamp-2 max-w-3xl">{apod.description}</p>
+							{#if apod.credits}
+								<p class="text-gray-500 text-xs mt-2">Credit: {apod.credits}</p>
 							{/if}
-						</p>
-
-						<PhotoGrid {photos} onPhotoClick={handlePhotoClick} />
-
-						<!-- Load More -->
-						{#if hasMore && photos.length > 0}
-							<div class="flex justify-center pt-6">
-								<button
-									type="button"
-									class="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
-									onclick={loadMore}
-									disabled={loadingPhotos}
-								>
-									{loadingPhotos ? 'Loading...' : 'Load More'}
-								</button>
-							</div>
-						{/if}
+						</div>
 					</div>
-				{/if}
+				</button>
 			</section>
+		{/if}
 
-			<!-- Sidebar (desktop only) -->
-			<SupportSidebar />
-		</div>
+		<!-- Latest from Mars -->
+		{#if latestPhotos.length > 0}
+			<section class="space-y-4">
+				<div class="flex items-center justify-between">
+					<div class="flex items-center gap-2">
+						<div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center">
+							<span class="text-white text-lg">🔴</span>
+						</div>
+						<h2 class="text-2xl font-bold text-white">Latest from Mars</h2>
+					</div>
+					<a href="/mars" class="text-orange-400 hover:text-orange-300 text-sm font-medium flex items-center gap-1">
+						Browse all
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+						</svg>
+					</a>
+				</div>
+				<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+					{#each latestPhotos.slice(0, 6) as photo (photo.id)}
+						<button
+							type="button"
+							class="group relative aspect-square overflow-hidden rounded-lg bg-gray-800 cursor-pointer"
+							onclick={() => handlePhotoClick(photo)}
+						>
+							<img
+								src={photo.img_src}
+								alt="Mars surface from {photo.camera.full_name}"
+								class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+								loading="lazy"
+							/>
+							<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+								<div class="absolute bottom-0 left-0 right-0 p-2">
+									<p class="text-white text-xs font-medium truncate">{photo.camera.full_name}</p>
+									<p class="text-gray-300 text-xs">{formatSol(photo.sol)}</p>
+								</div>
+							</div>
+						</button>
+					{/each}
+				</div>
+			</section>
+		{/if}
+
+		<!-- Latest from JWST -->
+		{#if jwstImages.length > 0}
+			<section class="space-y-4">
+				<div class="flex items-center justify-between">
+					<div class="flex items-center gap-2">
+						<div class="w-8 h-8 bg-gradient-to-br from-amber-500 to-red-600 rounded-full flex items-center justify-center">
+							<span class="text-white text-xs font-bold">JW</span>
+						</div>
+						<h2 class="text-2xl font-bold text-white">James Webb Space Telescope</h2>
+					</div>
+					<a href="/telescopes" class="text-purple-400 hover:text-purple-300 text-sm font-medium flex items-center gap-1">
+						Browse all
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+						</svg>
+					</a>
+				</div>
+				<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+					{#each jwstImages.slice(0, 4) as image (image.id)}
+						<button
+							type="button"
+							class="group relative aspect-square overflow-hidden rounded-lg bg-gray-800 cursor-pointer"
+							onclick={() => handleSpaceImageClick(image)}
+						>
+							<img
+								src={image.thumbnail_src || image.img_src}
+								alt={image.title}
+								class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+								loading="lazy"
+							/>
+							<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+								<div class="absolute bottom-0 left-0 right-0 p-3">
+									<p class="text-white text-sm font-medium truncate">{image.title}</p>
+								</div>
+							</div>
+						</button>
+					{/each}
+				</div>
+			</section>
+		{/if}
+
+		<!-- Latest from Hubble -->
+		{#if hubbleImages.length > 0}
+			<section class="space-y-4">
+				<div class="flex items-center justify-between">
+					<div class="flex items-center gap-2">
+						<div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+							<span class="text-white text-xs font-bold">H</span>
+						</div>
+						<h2 class="text-2xl font-bold text-white">Hubble Space Telescope</h2>
+					</div>
+					<a href="/telescopes" class="text-purple-400 hover:text-purple-300 text-sm font-medium flex items-center gap-1">
+						Browse all
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+						</svg>
+					</a>
+				</div>
+				<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+					{#each hubbleImages.slice(0, 4) as image (image.id)}
+						<button
+							type="button"
+							class="group relative aspect-square overflow-hidden rounded-lg bg-gray-800 cursor-pointer"
+							onclick={() => handleSpaceImageClick(image)}
+						>
+							<img
+								src={image.thumbnail_src || image.img_src}
+								alt={image.title}
+								class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+								loading="lazy"
+							/>
+							<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+								<div class="absolute bottom-0 left-0 right-0 p-3">
+									<p class="text-white text-sm font-medium truncate">{image.title}</p>
+								</div>
+							</div>
+						</button>
+					{/each}
+				</div>
+			</section>
+		{/if}
+
+		<!-- Quick Links -->
+		<section class="grid md:grid-cols-2 gap-6">
+			<a href="/mars" class="group bg-gradient-to-br from-orange-900/30 to-red-900/30 border border-orange-800/50 rounded-xl p-6 hover:border-orange-600/50 transition-colors">
+				<div class="flex items-center gap-4">
+					<div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+						<span class="text-3xl">🔴</span>
+					</div>
+					<div>
+						<h3 class="text-white font-semibold text-lg group-hover:text-orange-400 transition-colors">Mars Rovers</h3>
+						<p class="text-gray-400 text-sm">Browse Perseverance, Curiosity, Opportunity & Spirit imagery</p>
+					</div>
+				</div>
+			</a>
+			<a href="/telescopes" class="group bg-gradient-to-br from-purple-900/30 to-blue-900/30 border border-purple-800/50 rounded-xl p-6 hover:border-purple-600/50 transition-colors">
+				<div class="flex items-center gap-4">
+					<div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
+						<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+						</svg>
+					</div>
+					<div>
+						<h3 class="text-white font-semibold text-lg group-hover:text-purple-400 transition-colors">Space Telescopes</h3>
+						<p class="text-gray-400 text-sm">Explore James Webb & Hubble Space Telescope imagery</p>
+					</div>
+				</div>
+			</a>
+		</section>
 	</main>
 
+	<!-- Educational Content Section -->
+	<section class="border-t border-gray-800 bg-gray-900/30">
+		<div class="max-w-7xl mx-auto px-4 py-12">
+			<h2 class="text-2xl font-bold text-white mb-8 text-center">About NASA's Space Missions</h2>
+
+			<div class="grid md:grid-cols-3 gap-6">
+				<article class="bg-gray-800/50 rounded-xl p-5 space-y-3">
+					<div class="flex items-center gap-3">
+						<div class="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center">
+							<svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+								<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+							</svg>
+						</div>
+						<h3 class="text-white font-semibold">APOD</h3>
+					</div>
+					<p class="text-gray-400 text-sm leading-relaxed">
+						The Astronomy Picture of the Day features a different image of our universe each day,
+						accompanied by a brief explanation written by a professional astronomer.
+						Running since 1995, APOD is one of NASA's most popular websites.
+					</p>
+				</article>
+
+				<article class="bg-gray-800/50 rounded-xl p-5 space-y-3">
+					<div class="flex items-center gap-3">
+						<div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white">🔴</div>
+						<h3 class="text-white font-semibold">Mars Rovers</h3>
+					</div>
+					<p class="text-gray-400 text-sm leading-relaxed">
+						NASA has sent four rovers to Mars: Spirit, Opportunity, Curiosity, and Perseverance.
+						These robotic explorers have captured millions of images, revealing Mars' ancient water history
+						and searching for signs of past microbial life.
+					</p>
+				</article>
+
+				<article class="bg-gray-800/50 rounded-xl p-5 space-y-3">
+					<div class="flex items-center gap-3">
+						<div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
+							<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+							</svg>
+						</div>
+						<h3 class="text-white font-semibold">Space Telescopes</h3>
+					</div>
+					<p class="text-gray-400 text-sm leading-relaxed">
+						The Hubble and James Webb Space Telescopes are humanity's eyes on the universe.
+						Together they observe from ultraviolet to infrared, revealing galaxies billions of light-years away
+						and studying the atmospheres of distant exoplanets.
+					</p>
+				</article>
+			</div>
+		</div>
+	</section>
+
 	<!-- Footer -->
-	<footer class="border-t border-gray-800 mt-20">
+	<footer class="border-t border-gray-800">
 		<div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
-			<!-- Ad Placeholder -->
-			<AdPlaceholder location="footer" />
+			<!-- Ad Placeholder - only show when content is loaded -->
+			{#if contentLoaded}
+				<AdPlaceholder location="footer" />
+			{/if}
 
 			<!-- Support -->
 			<div class="flex justify-center">
@@ -275,12 +323,11 @@
 			</div>
 
 			<p class="text-gray-500 text-sm text-center">
-				Data provided by <a href="https://mars.nasa.gov" target="_blank" rel="noopener noreferrer" class="text-orange-400 hover:text-orange-300">NASA Mars Exploration</a>.
-				Images courtesy of NASA/JPL-Caltech.
+				Data provided by <a href="https://nasa.gov" target="_blank" rel="noopener noreferrer" class="text-purple-400 hover:text-purple-300">NASA</a>.
+				Images courtesy of NASA/JPL-Caltech/ESA/STScI.
 			</p>
 		</div>
 	</footer>
 </div>
 
-<!-- Lightbox -->
-<Lightbox photo={selectedPhoto} onClose={closeLightbox} />
+<Lightbox photo={selectedPhoto} spaceImage={selectedSpaceImage} onClose={closeLightbox} />

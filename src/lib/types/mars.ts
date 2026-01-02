@@ -26,6 +26,81 @@ export interface Photo {
 	rover: Rover;
 }
 
+// Unified image type for all sources (rovers, telescopes, APOD)
+export interface SpaceImage {
+	id: string;
+	title: string;
+	description?: string;
+	img_src: string;
+	thumbnail_src?: string;
+	date: string;
+	source: ImageSource;
+	sourceDetails?: string;
+	credits?: string;
+	tags?: string[];
+}
+
+export type ImageSource = 'mars-rover' | 'hubble' | 'jwst' | 'apod';
+
+// Hubble API types
+export interface HubbleImage {
+	id: number;
+	name: string;
+	description: string;
+	credits: string;
+	news_name: string;
+	mission: string;
+	collection: string;
+	image_files: {
+		file_url: string;
+		file_size: number;
+		width: number;
+		height: number;
+	}[];
+}
+
+// NASA APOD types
+export interface APODImage {
+	date: string;
+	explanation: string;
+	hdurl?: string;
+	media_type: string;
+	service_version: string;
+	title: string;
+	url: string;
+	copyright?: string;
+}
+
+// Source categories
+export type SourceCategory = 'rovers' | 'telescopes';
+
+export const IMAGE_SOURCES: {
+	category: SourceCategory;
+	sources: {
+		id: string;
+		name: string;
+		description: string;
+		active: boolean;
+	}[];
+}[] = [
+	{
+		category: 'rovers',
+		sources: [
+			{ id: 'perseverance', name: 'Perseverance', description: 'Mars 2020 Rover', active: true },
+			{ id: 'curiosity', name: 'Curiosity', description: 'Mars Science Laboratory', active: true },
+			{ id: 'opportunity', name: 'Opportunity', description: 'MER-B (2004-2018)', active: false },
+			{ id: 'spirit', name: 'Spirit', description: 'MER-A (2004-2010)', active: false }
+		]
+	},
+	{
+		category: 'telescopes',
+		sources: [
+			{ id: 'jwst', name: 'James Webb', description: 'Space Telescope', active: true },
+			{ id: 'hubble', name: 'Hubble', description: 'Space Telescope', active: true }
+		]
+	}
+];
+
 export interface PhotosResponse {
 	photos: Photo[];
 }
