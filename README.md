@@ -1,28 +1,38 @@
-# Mars Explorer
+# Cosmic Mirror
 
-A clean, modern interface for browsing NASA Mars rover imagery. All four rovers. 20+ years of data. No clunky government UI.
+A modern portal for exploring NASA imagery and space science data. Mars rovers, JWST, Hubble, APOD, and educational content — all in one clean interface.
 
-**[Live Demo](#)** (coming soon)
+**[Live Demo](https://cosmicmirror.vercel.app)**
 
 ## Features
 
-- **All 4 Mars Rovers**: Perseverance, Curiosity, Opportunity, and Spirit
-- **Powerful Filters**: Sol range, Earth date range, camera selection, text search
-- **Latest Photos Carousel**: See what Perseverance captured in the last 24 hours
-- **Legacy Rover Support**: Spirit & Opportunity images from NASA's Planetary Data System archives
-- **Clean UI**: Dark theme, responsive grid, lightbox viewer
-- **No API Key Required**: Uses NASA's public APIs directly
+### Imagery
 
-## Why This Exists
+- **Mars Rovers**: All 4 rovers (Perseverance, Curiosity, Opportunity, Spirit) with 20+ years of imagery
+- **JWST Gallery**: Latest images from the James Webb Space Telescope
+- **Hubble Archive**: Classic imagery from the Hubble Space Telescope
+- **APOD**: NASA's Astronomy Picture of the Day
 
-NASA has incredible Mars imagery spanning 20+ years, but it's scattered across different archives with dated interfaces. This project makes that data accessible through a single, modern UI.
+### Education Section
+
+- **Solar System**: Comprehensive data on all planets, dwarf planets, and small bodies with science/humanities/moons tri-pane detail views
+- **Constellations**: 88 IAU constellations plus 17 cultural sky traditions (Chinese, Hindu, Polynesian, Aboriginal, and more)
+- **Hall of Fame**: Space pioneers including astronauts, cosmonauts, astronomers, and unsung heroes (Hidden Figures, Mission Control, engineers)
+- **Cosmic Distance Ladder**: How we measure the universe
+
+### Interface
+
+- **Clean Dark UI**: Minimal, responsive design
+- **Powerful Filters**: Sol range, Earth date, camera selection, text search
+- **Lightbox Viewer**: Full-screen image viewing
+- **No API Key Required**: Uses NASA's public APIs
 
 ## Quick Start
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/mars-explorer.git
-cd mars-explorer
+git clone https://github.com/MildlyEntropic/space-explorer.git
+cd space-explorer
 
 # Install dependencies
 npm install
@@ -35,44 +45,45 @@ Open [http://localhost:5173](http://localhost:5173)
 
 ## Tech Stack
 
-- **[SvelteKit 2](https://kit.svelte.dev/)** + **[Svelte 5](https://svelte.dev/)** - Frontend framework
+- **[SvelteKit 2](https://kit.svelte.dev/)** + **[Svelte 5](https://svelte.dev/)** - Frontend framework with runes
 - **[Tailwind CSS](https://tailwindcss.com/)** - Styling
 - **[TypeScript](https://www.typescriptlang.org/)** - Type safety
-- **[Vercel](https://vercel.com/)** - Hosting (serverless functions for MER proxy)
+- **[Vercel](https://vercel.com/)** - Hosting with serverless functions
 
 ## Data Sources
 
-| Rover | Source | Notes |
-|-------|--------|-------|
-| Perseverance | [mars.nasa.gov/rss/api](https://mars.nasa.gov) | Active, latest images |
-| Curiosity | [mars.nasa.gov/api/v1](https://mars.nasa.gov) | Active, latest images |
-| Opportunity | [PDS Archive](https://planetarydata.jpl.nasa.gov) | Mission ended 2018, full archive |
-| Spirit | [PDS Archive](https://planetarydata.jpl.nasa.gov) | Mission ended 2010, full archive |
+| Source | Content |
+| ------ | ------- |
+| [NASA Mars API](https://mars.nasa.gov) | Perseverance & Curiosity imagery |
+| [PDS Archive](https://planetarydata.jpl.nasa.gov) | Spirit & Opportunity archives |
+| [JWST via STScI](https://webbtelescope.org) | James Webb Space Telescope |
+| [Hubble via STScI](https://hubblesite.org) | Hubble Space Telescope |
+| [NASA APOD](https://apod.nasa.gov) | Astronomy Picture of the Day |
+| [NASA Planetary Factsheets](https://nssdc.gsfc.nasa.gov/planetary/factsheet/) | Solar system data |
+| [IAU](https://www.iau.org) | Constellation definitions |
 
 ## Project Structure
 
-```
+```text
 src/
 ├── lib/
 │   ├── api/
-│   │   └── nasa.ts              # API client for all rovers
+│   │   └── nasa.ts              # API clients for all sources
 │   ├── components/
-│   │   ├── FilterPanel.svelte   # Search filters UI
-│   │   ├── LatestPhotos.svelte  # Carousel of recent images
-│   │   ├── Lightbox.svelte      # Full-screen image viewer
-│   │   ├── PhotoGrid.svelte     # Image grid with lazy loading
-│   │   ├── RoverSelector.svelte # Rover picker
-│   │   ├── SupportSidebar.svelte
-│   │   └── AdPlaceholder.svelte
+│   │   ├── FilterPanel.svelte   # Search filters
+│   │   ├── LatestPhotos.svelte  # Image carousels
+│   │   ├── Lightbox.svelte      # Full-screen viewer
+│   │   ├── PhotoGrid.svelte     # Image grids
+│   │   └── ...
 │   └── types/
 │       └── mars.ts              # TypeScript types
 ├── routes/
-│   ├── +page.svelte             # Main page
+│   ├── +page.svelte             # Home (APOD + Mars)
+│   ├── telescopes/+page.svelte  # JWST & Hubble
+│   ├── education/+page.svelte   # Solar system, constellations, Hall of Fame
 │   └── api/
-│       ├── mer/+server.ts       # Proxy for PDS directory listing
-│       └── mer-image/+server.ts # Proxy for PDS images (CORS bypass)
-└── docs/
-    └── FUTURE_FEATURES.md       # Roadmap ideas
+│       ├── mer/+server.ts       # PDS proxy for legacy rovers
+│       └── mer-image/+server.ts # Image proxy (CORS bypass)
 ```
 
 ## Deployment
@@ -83,23 +94,23 @@ src/
 2. Import repo on [vercel.com](https://vercel.com)
 3. Deploy (auto-detects SvelteKit)
 
-The MER proxy endpoints require serverless functions, so static hosting (GitHub Pages) won't work for Spirit/Opportunity images.
+The proxy endpoints require serverless functions for Spirit/Opportunity CORS bypass.
 
 ## Contributing
 
-Contributions welcome! Some ideas:
+Contributions welcome! Ideas:
 
-- [ ] Image download button
-- [ ] Share to social media
-- [ ] Favorites/collections
-- [ ] More rovers (InSight, Phoenix, etc.)
-- [ ] Community tagging system (see [FUTURE_FEATURES.md](docs/FUTURE_FEATURES.md))
+- [ ] More cultural constellation systems
+- [ ] Mission timelines
+- [ ] Rocket/launch vehicle database
+- [ ] Deep sky object catalog
+- [ ] Interactive solar system visualization
 
 ## License
 
-MIT - see [LICENSE](LICENSE)
+MIT
 
 ---
 
-**Data**: NASA/JPL-Caltech (public domain)
+**Data**: NASA/JPL-Caltech, STScI, IAU (public domain / CC-BY)
 **Not affiliated with NASA**
