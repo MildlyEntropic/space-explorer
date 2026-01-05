@@ -9,7 +9,10 @@ const API_KEY = NASA_API_KEY || 'DEMO_KEY';
 async function fetchAPOD(): Promise<SpaceImage | null> {
 	try {
 		const response = await fetch(`${APOD_API}?api_key=${API_KEY}`);
-		if (!response.ok) return null;
+		if (!response.ok) {
+			console.error('APOD API error:', response.status, response.statusText);
+			return null;
+		}
 
 		const data: APODImage = await response.json();
 
@@ -27,7 +30,8 @@ async function fetchAPOD(): Promise<SpaceImage | null> {
 			sourceDetails: 'Astronomy Picture of the Day',
 			credits: data.copyright || 'NASA'
 		};
-	} catch {
+	} catch (err) {
+		console.error('APOD fetch error:', err);
 		return null;
 	}
 }
@@ -41,7 +45,10 @@ async function fetchRecentAPOD(count: number = 30): Promise<SpaceImage[]> {
 		const response = await fetch(
 			`${APOD_API}?api_key=${API_KEY}&start_date=${startDate.toISOString().split('T')[0]}&end_date=${endDate.toISOString().split('T')[0]}`
 		);
-		if (!response.ok) return [];
+		if (!response.ok) {
+			console.error('APOD Archive API error:', response.status, response.statusText);
+			return [];
+		}
 
 		const data: APODImage[] = await response.json();
 
@@ -59,7 +66,8 @@ async function fetchRecentAPOD(count: number = 30): Promise<SpaceImage[]> {
 				sourceDetails: 'Astronomy Picture of the Day',
 				credits: item.copyright || 'NASA'
 			}));
-	} catch {
+	} catch (err) {
+		console.error('APOD Archive fetch error:', err);
 		return [];
 	}
 }
