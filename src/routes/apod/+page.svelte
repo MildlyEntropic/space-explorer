@@ -8,12 +8,95 @@
 	let recentApod: SpaceImage[] = $state(data.recentApod || []);
 	let selectedImage: SpaceImage | null = $state(null);
 
+	// Pagination state
+	let loading = $state(false);
+	let hasMore = $state(true);
+	let lastLoadedDate = $derived(recentApod.length > 0 ? recentApod[recentApod.length - 1].date : null);
+
+	// Search state
+	let searchKeyword = $state('');
+	let startDate = $state('');
+	let endDate = $state('');
+	let debounceTimer: ReturnType<typeof setTimeout>;
+
+	// Filtered images based on search
+	let filteredImages = $derived.by(() => {
+		if (!searchKeyword) return recentApod.slice(1);
+		const searchLower = searchKeyword.toLowerCase();
+		return recentApod.slice(1).filter(
+			(img) =>
+				img.title.toLowerCase().includes(searchLower) ||
+				(img.description && img.description.toLowerCase().includes(searchLower))
+		);
+	});
+
 	function handleImageClick(image: SpaceImage) {
 		selectedImage = image;
 	}
 
 	function closeLightbox() {
 		selectedImage = null;
+	}
+
+	function handleSearchInput(value: string) {
+		searchKeyword = value;
+	}
+
+	async function searchByDate() {
+		if (!startDate && !endDate) return;
+
+		loading = true;
+		try {
+			const params = new URLSearchParams();
+			if (endDate) params.set('end_date', endDate);
+			if (startDate && endDate) {
+				const start = new Date(startDate);
+				const end = new Date(endDate);
+				const daysDiff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+				params.set('count', String(Math.min(daysDiff + 1, 30)));
+			} else {
+				params.set('count', '12');
+			}
+
+			const response = await fetch(`/api/apod?${params}`);
+			const result = await response.json();
+
+			recentApod = [recentApod[0], ...result.images];
+			hasMore = result.hasMore;
+		} catch (err) {
+			console.error('Failed to search APOD:', err);
+		} finally {
+			loading = false;
+		}
+	}
+
+	async function loadMore() {
+		if (loading || !hasMore || !lastLoadedDate) return;
+
+		loading = true;
+		try {
+			const endDateObj = new Date(lastLoadedDate);
+			endDateObj.setDate(endDateObj.getDate() - 1);
+			const endDateStr = endDateObj.toISOString().split('T')[0];
+
+			const response = await fetch(`/api/apod?end_date=${endDateStr}&count=6`);
+			const result = await response.json();
+
+			if (result.images.length > 0) {
+				recentApod = [...recentApod, ...result.images];
+			}
+			hasMore = result.hasMore && result.images.length > 0;
+		} catch (err) {
+			console.error('Failed to load more APOD:', err);
+		} finally {
+			loading = false;
+		}
+	}
+
+	function clearSearch() {
+		searchKeyword = '';
+		startDate = '';
+		endDate = '';
 	}
 </script>
 
@@ -93,17 +176,80 @@
 			</section>
 		{/if}
 
+		<!-- Search/Filter Section -->
+		<section class="space-y-4">
+			<div class="flex items-center gap-4">
+				<span class="text-[10px] tracking-[0.3em] text-white/50 uppercase">Search Archive</span>
+				<div class="h-px flex-1 bg-white/5"></div>
+			</div>
+
+			<div class="flex flex-wrap gap-4 items-end">
+				<!-- Keyword Search -->
+				<div class="flex-1 min-w-[200px]">
+					<label class="block text-[10px] tracking-wider text-white/40 uppercase mb-2">Keyword</label>
+					<input
+						type="text"
+						value={searchKeyword}
+						oninput={(e) => handleSearchInput(e.currentTarget.value)}
+						placeholder="Search titles & descriptions..."
+						class="w-full px-4 py-2.5 bg-white/[0.02] border border-white/10 text-white/90 text-sm placeholder-white/30 focus:border-apod/50 focus:outline-none transition-colors"
+					/>
+				</div>
+
+				<!-- Date Range -->
+				<div class="flex gap-3 items-end">
+					<div>
+						<label class="block text-[10px] tracking-wider text-white/40 uppercase mb-2">From</label>
+						<input
+							type="date"
+							bind:value={startDate}
+							min="1995-06-16"
+							max={new Date().toISOString().split('T')[0]}
+							class="px-3 py-2.5 bg-white/[0.02] border border-white/10 text-white/90 text-sm focus:border-apod/50 focus:outline-none transition-colors"
+						/>
+					</div>
+					<div>
+						<label class="block text-[10px] tracking-wider text-white/40 uppercase mb-2">To</label>
+						<input
+							type="date"
+							bind:value={endDate}
+							min="1995-06-16"
+							max={new Date().toISOString().split('T')[0]}
+							class="px-3 py-2.5 bg-white/[0.02] border border-white/10 text-white/90 text-sm focus:border-apod/50 focus:outline-none transition-colors"
+						/>
+					</div>
+					<button
+						type="button"
+						onclick={searchByDate}
+						disabled={loading || (!startDate && !endDate)}
+						class="px-4 py-2.5 bg-apod/20 border border-apod/30 text-apod text-xs tracking-wider uppercase hover:bg-apod/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+					>
+						{loading ? 'Loading...' : 'Search'}
+					</button>
+					{#if searchKeyword || startDate || endDate}
+						<button
+							type="button"
+							onclick={clearSearch}
+							class="px-4 py-2.5 bg-white/[0.02] border border-white/10 text-white/50 text-xs tracking-wider uppercase hover:text-white/80 hover:border-white/20 transition-colors"
+						>
+							Clear
+						</button>
+					{/if}
+				</div>
+			</div>
+		</section>
+
 		<!-- Recent Archive -->
-		{#if recentApod.length > 0}
+		{#if filteredImages.length > 0}
 			<section class="space-y-6">
 				<div class="flex items-center gap-4">
 					<span class="text-[10px] tracking-[0.3em] text-white/50 uppercase">Archive</span>
 					<div class="h-px flex-1 bg-white/5"></div>
-					<span class="text-[10px] tracking-wider text-white/50">{recentApod.length - 1} images</span>
+					<span class="text-[10px] tracking-wider text-white/50">{filteredImages.length} images</span>
 				</div>
 
-				<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-					{#each recentApod.slice(1) as image (image.id)}
+				<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+					{#each filteredImages as image (image.id)}
 						<button
 							type="button"
 							class="group relative aspect-square overflow-hidden bg-white/[0.02] border border-white/5 hover:border-white/20 cursor-pointer text-left transition-all duration-300"
@@ -128,6 +274,24 @@
 						</button>
 					{/each}
 				</div>
+
+				<!-- Load More Button -->
+				{#if hasMore && !searchKeyword}
+					<div class="flex justify-center pt-4">
+						<button
+							type="button"
+							onclick={loadMore}
+							disabled={loading}
+							class="px-6 py-2.5 bg-white/[0.02] border border-white/10 hover:border-white/20 text-xs tracking-wider uppercase text-white/70 hover:text-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+						>
+							{loading ? 'Loading...' : 'Load More'}
+						</button>
+					</div>
+				{/if}
+			</section>
+		{:else if searchKeyword}
+			<section class="py-12 text-center">
+				<p class="text-white/40 text-sm">No images found matching "{searchKeyword}"</p>
 			</section>
 		{/if}
 	</main>

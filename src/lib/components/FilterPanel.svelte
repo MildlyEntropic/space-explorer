@@ -18,6 +18,7 @@
 		onDateEndChange: (date: string) => void;
 		onCameraChange: (camera: string) => void;
 		onSearchChange: (search: string) => void;
+		onSearchInput?: (search: string) => void;
 		onClearFilters: () => void;
 		accentColor?: string;
 	}
@@ -39,9 +40,18 @@
 		onDateEndChange,
 		onCameraChange,
 		onSearchChange,
+		onSearchInput,
 		onClearFilters,
 		accentColor = 'red'
 	}: Props = $props();
+
+	function handleSearchInput(e: Event) {
+		const value = (e.target as HTMLInputElement).value;
+		onSearchChange(value);
+		if (onSearchInput) {
+			onSearchInput(value);
+		}
+	}
 
 	const cameras = $derived(ROVER_CAMERAS[rover] || []);
 
@@ -244,7 +254,7 @@
 					id="search-input"
 					type="text"
 					value={search}
-					oninput={(e) => onSearchChange((e.target as HTMLInputElement).value)}
+					oninput={handleSearchInput}
 					placeholder="Search captions, metadata..."
 					class="px-3 py-2 bg-white/[0.02] border border-white/10 text-white text-sm focus:outline-none {focusClass} transition-colors w-full"
 				/>

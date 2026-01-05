@@ -8,7 +8,14 @@ const API_KEY = NASA_API_KEY || 'DEMO_KEY';
 
 async function fetchAPOD(): Promise<SpaceImage | null> {
 	try {
-		const response = await fetch(`${APOD_API}?api_key=${API_KEY}`);
+		const controller = new AbortController();
+		const timeout = setTimeout(() => controller.abort(), 15000);
+
+		const response = await fetch(`${APOD_API}?api_key=${API_KEY}`, {
+			signal: controller.signal
+		});
+		clearTimeout(timeout);
+
 		if (!response.ok) {
 			console.error('APOD API error:', response.status, response.statusText);
 			return null;
@@ -42,9 +49,15 @@ async function fetchRecentAPOD(count: number = 30): Promise<SpaceImage[]> {
 		const startDate = new Date();
 		startDate.setDate(startDate.getDate() - count);
 
+		const controller = new AbortController();
+		const timeout = setTimeout(() => controller.abort(), 20000);
+
 		const response = await fetch(
-			`${APOD_API}?api_key=${API_KEY}&start_date=${startDate.toISOString().split('T')[0]}&end_date=${endDate.toISOString().split('T')[0]}`
+			`${APOD_API}?api_key=${API_KEY}&start_date=${startDate.toISOString().split('T')[0]}&end_date=${endDate.toISOString().split('T')[0]}`,
+			{ signal: controller.signal }
 		);
+		clearTimeout(timeout);
+
 		if (!response.ok) {
 			console.error('APOD Archive API error:', response.status, response.statusText);
 			return [];
@@ -77,10 +90,9 @@ export const load: PageServerLoad = async ({ setHeaders }) => {
 		'cache-control': 'public, max-age=300, s-maxage=600'
 	});
 
-	const [todayApod, recentApod] = await Promise.all([
-		fetchAPOD().catch(() => null),
-		fetchRecentAPOD(30).catch(() => [])
-	]);
+	// Fetch sequentially and with smaller batch to avoid NASA API timeouts
+	const todayApod = await fetchAPOD().catch(() => null);
+	const recentApod = await fetchRecentAPOD(12).catch(() => []);
 
 	return {
 		todayApod,

@@ -139,6 +139,18 @@
 		camera = '';
 		search = '';
 	}
+
+	// Debounced real-time search
+	let debounceTimer: ReturnType<typeof setTimeout>;
+
+	function handleSearchInput(value: string) {
+		clearTimeout(debounceTimer);
+		debounceTimer = setTimeout(() => {
+			if (value) {
+				searchPhotos();
+			}
+		}, 300);
+	}
 </script>
 
 <svelte:head>
@@ -213,6 +225,7 @@
 				onDateEndChange={(d) => dateEnd = d}
 				onCameraChange={(c) => camera = c}
 				onSearchChange={(s) => search = s}
+				onSearchInput={handleSearchInput}
 				onClearFilters={clearFilters}
 				accentColor={currentColor}
 			/>

@@ -284,6 +284,19 @@
 		}
 	}
 
+	// Debounced real-time search
+	let debounceTimer: ReturnType<typeof setTimeout>;
+
+	function handleSearchInput(value: string) {
+		searchQuery = value;
+		clearTimeout(debounceTimer);
+		debounceTimer = setTimeout(() => {
+			if (searchQuery) {
+				searchImages();
+			}
+		}, 300);
+	}
+
 	// Display name helper
 	const telescopeDisplayNames: Record<TelescopeName, string> = {
 		jwst: 'JWST',
@@ -438,7 +451,8 @@
 				<div class="flex items-center gap-2 flex-1 max-w-md">
 					<input
 						type="text"
-						bind:value={searchQuery}
+						value={searchQuery}
+						oninput={(e) => handleSearchInput(e.currentTarget.value)}
 						onkeydown={handleKeydown}
 						placeholder="Search {currentDisplayName} images..."
 						class="flex-1 bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white/70 placeholder:text-white/30 focus:outline-none focus:border-white/30 transition-colors"
