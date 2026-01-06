@@ -6,7 +6,12 @@ import { NASA_API_KEY } from '$env/static/private';
 const APOD_API = 'https://api.nasa.gov/planetary/apod';
 const API_KEY = NASA_API_KEY || 'DEMO_KEY';
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, setHeaders }) => {
+	// Cache for 6 hours on Vercel edge, 1 hour on client
+	setHeaders({
+		'cache-control': 'public, max-age=3600, s-maxage=21600, stale-while-revalidate=86400'
+	});
+
 	const endDateParam = url.searchParams.get('end_date');
 	const countParam = url.searchParams.get('count') || '6';
 	const searchParam = url.searchParams.get('search') || '';
@@ -16,15 +21,13 @@ export const GET: RequestHandler = async ({ url }) => {
 	const startDate = new Date(endDate);
 	startDate.setDate(startDate.getDate() - count);
 
-	try {
-		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), 20000);
+	const startStr = startDate.toISOString().split('T')[0];
+	const endStr = endDate.toISOString().split('T')[0];
 
+	try {
 		const response = await fetch(
-			`${APOD_API}?api_key=${API_KEY}&start_date=${startDate.toISOString().split('T')[0]}&end_date=${endDate.toISOString().split('T')[0]}`,
-			{ signal: controller.signal }
+			`${APOD_API}?api_key=${API_KEY}&start_date=${startStr}&end_date=${endStr}`
 		);
-		clearTimeout(timeout);
 
 		if (!response.ok) {
 			console.error('APOD API error:', response.status, response.statusText);

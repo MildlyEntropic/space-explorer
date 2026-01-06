@@ -1,6 +1,5 @@
 import type { PageServerLoad } from './$types';
 import type { SpaceImage, APODImage } from '$lib/types/mars';
-
 import { NASA_API_KEY } from '$env/static/private';
 
 const APOD_API = 'https://api.nasa.gov/planetary/apod';
@@ -8,13 +7,7 @@ const API_KEY = NASA_API_KEY || 'DEMO_KEY';
 
 async function fetchAPOD(): Promise<SpaceImage | null> {
 	try {
-		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), 15000);
-
-		const response = await fetch(`${APOD_API}?api_key=${API_KEY}`, {
-			signal: controller.signal
-		});
-		clearTimeout(timeout);
+		const response = await fetch(`${APOD_API}?api_key=${API_KEY}`);
 
 		if (!response.ok) {
 			console.error('APOD API error:', response.status, response.statusText);
@@ -43,20 +36,15 @@ async function fetchAPOD(): Promise<SpaceImage | null> {
 	}
 }
 
-async function fetchRecentAPOD(count: number = 30): Promise<SpaceImage[]> {
+async function fetchRecentAPOD(count: number = 12): Promise<SpaceImage[]> {
 	try {
 		const endDate = new Date();
 		const startDate = new Date();
 		startDate.setDate(startDate.getDate() - count);
 
-		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), 20000);
-
 		const response = await fetch(
-			`${APOD_API}?api_key=${API_KEY}&start_date=${startDate.toISOString().split('T')[0]}&end_date=${endDate.toISOString().split('T')[0]}`,
-			{ signal: controller.signal }
+			`${APOD_API}?api_key=${API_KEY}&start_date=${startDate.toISOString().split('T')[0]}&end_date=${endDate.toISOString().split('T')[0]}`
 		);
-		clearTimeout(timeout);
 
 		if (!response.ok) {
 			console.error('APOD Archive API error:', response.status, response.statusText);
@@ -66,9 +54,9 @@ async function fetchRecentAPOD(count: number = 30): Promise<SpaceImage[]> {
 		const data: APODImage[] = await response.json();
 
 		return data
-			.filter(item => item.media_type === 'image')
+			.filter((item) => item.media_type === 'image')
 			.reverse()
-			.map(item => ({
+			.map((item) => ({
 				id: `apod-${item.date}`,
 				title: item.title,
 				description: item.explanation,
@@ -86,11 +74,12 @@ async function fetchRecentAPOD(count: number = 30): Promise<SpaceImage[]> {
 }
 
 export const load: PageServerLoad = async ({ setHeaders }) => {
+	// Aggressive caching: 1 hour client, 6 hours server (Vercel edge)
 	setHeaders({
-		'cache-control': 'public, max-age=300, s-maxage=600'
+		'cache-control': 'public, max-age=3600, s-maxage=21600, stale-while-revalidate=86400'
 	});
 
-	// Fetch sequentially and with smaller batch to avoid NASA API timeouts
+	// Fetch sequentially to avoid overwhelming NASA API
 	const todayApod = await fetchAPOD().catch(() => null);
 	const recentApod = await fetchRecentAPOD(12).catch(() => []);
 
