@@ -59,11 +59,20 @@
 	async function fetchToday(): Promise<SpaceImage | null> {
 		try {
 			const response = await fetch('/api/apod');
-			if (!response.ok) return null;
-			const data: APODResponse = await response.json();
+			if (!response.ok) {
+				console.error('fetchToday failed:', response.status, response.statusText);
+				return null;
+			}
+			const data = await response.json();
+			// Check if it's an error response
+			if (data.error) {
+				console.error('fetchToday API error:', data.error);
+				return null;
+			}
 			if (data.media_type === 'video') return null;
-			return transformAPOD(data);
-		} catch {
+			return transformAPOD(data as APODResponse);
+		} catch (err) {
+			console.error('fetchToday exception:', err);
 			return null;
 		}
 	}
@@ -71,13 +80,27 @@
 	async function fetchDateRange(startStr: string, endStr: string): Promise<SpaceImage[]> {
 		try {
 			const response = await fetch(`/api/apod?start_date=${startStr}&end_date=${endStr}`);
-			if (!response.ok) return [];
-			const data: APODResponse[] = await response.json();
+			if (!response.ok) {
+				console.error('fetchDateRange failed:', response.status, response.statusText);
+				return [];
+			}
+			const data = await response.json();
+			// Check if it's an error response
+			if (data.error) {
+				console.error('fetchDateRange API error:', data.error);
+				return [];
+			}
+			// Ensure it's an array
+			if (!Array.isArray(data)) {
+				console.error('fetchDateRange: expected array, got:', typeof data);
+				return [];
+			}
 			return data
-				.filter((item) => item.media_type === 'image')
+				.filter((item: APODResponse) => item.media_type === 'image')
 				.reverse()
 				.map(transformAPOD);
-		} catch {
+		} catch (err) {
+			console.error('fetchDateRange exception:', err);
 			return [];
 		}
 	}
@@ -85,17 +108,22 @@
 	onMount(async () => {
 		try {
 			// Fetch today's APOD and last 12 days
-			const endDate = new Date();
-			const startDate = new Date();
-			startDate.setDate(startDate.getDate() - 12);
+			const endDateObj = new Date();
+			const startDateObj = new Date();
+			startDateObj.setDate(startDateObj.getDate() - 12);
 
 			const [today, recent] = await Promise.all([
 				fetchToday(),
-				fetchDateRange(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0])
+				fetchDateRange(startDateObj.toISOString().split('T')[0], endDateObj.toISOString().split('T')[0])
 			]);
 
 			todayApod = today;
 			recentApod = recent;
+
+			// If both failed to load any images, show error
+			if (!today && recent.length === 0) {
+				error = 'Unable to load images from NASA. The API may be slow or unavailable.';
+			}
 
 			if (recent.length < 12) {
 				hasMore = false;
