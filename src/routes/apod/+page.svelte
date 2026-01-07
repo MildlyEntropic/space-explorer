@@ -5,7 +5,9 @@
 	import Lightbox from '$lib/components/Lightbox.svelte';
 
 	const NASA_API_KEY = env.PUBLIC_NASA_API_KEY || 'DEMO_KEY';
-	const APOD_API = 'https://api.nasa.gov/planetary/apod';
+	const NASA_APOD_API = 'https://api.nasa.gov/planetary/apod';
+	// Fallback mirror that caches APOD data (much faster than NASA's slow API)
+	const MIRROR_APOD_API = 'https://apod.ellanan.com/api';
 
 	let todayApod: SpaceImage | null = $state(null);
 	let recentApod: SpaceImage[] = $state([]);
@@ -60,22 +62,43 @@
 		};
 	}
 
+	// Try mirror first (fast), fallback to NASA (slow)
+	async function fetchWithFallback(url: string, mirrorUrl: string): Promise<Response | null> {
+		try {
+			// Try the fast mirror first with a short timeout
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 5000);
+			const response = await fetch(mirrorUrl, { signal: controller.signal });
+			clearTimeout(timeoutId);
+			if (response.ok) return response;
+		} catch {
+			console.log('Mirror failed, trying NASA directly...');
+		}
+
+		// Fallback to NASA API
+		try {
+			const response = await fetch(url);
+			if (response.ok) return response;
+		} catch (err) {
+			console.error('NASA API also failed:', err);
+		}
+		return null;
+	}
+
 	async function fetchToday(): Promise<SpaceImage | null> {
 		try {
-			// Call NASA API directly from client to avoid serverless timeout
-			const response = await fetch(`${APOD_API}?api_key=${NASA_API_KEY}`);
-			if (!response.ok) {
-				console.error('fetchToday failed:', response.status, response.statusText);
-				return null;
-			}
+			const response = await fetchWithFallback(
+				`${NASA_APOD_API}?api_key=${NASA_API_KEY}`,
+				MIRROR_APOD_API
+			);
+			if (!response) return null;
+
 			const data = await response.json();
-			// Check if it's an error response
-			if (data.error) {
-				console.error('fetchToday API error:', data.error);
-				return null;
-			}
-			if (data.media_type === 'video') return null;
-			return transformAPOD(data as APODResponse);
+			// Mirror returns array even for single item
+			const item = Array.isArray(data) ? data[0] : data;
+			if (!item || item.error) return null;
+			if (item.media_type === 'video') return null;
+			return transformAPOD(item as APODResponse);
 		} catch (err) {
 			console.error('fetchToday exception:', err);
 			return null;
@@ -84,23 +107,15 @@
 
 	async function fetchDateRange(startStr: string, endStr: string): Promise<SpaceImage[]> {
 		try {
-			// Call NASA API directly from client to avoid serverless timeout
-			const response = await fetch(`${APOD_API}?api_key=${NASA_API_KEY}&start_date=${startStr}&end_date=${endStr}`);
-			if (!response.ok) {
-				console.error('fetchDateRange failed:', response.status, response.statusText);
-				return [];
-			}
+			const response = await fetchWithFallback(
+				`${NASA_APOD_API}?api_key=${NASA_API_KEY}&start_date=${startStr}&end_date=${endStr}`,
+				`${MIRROR_APOD_API}?start_date=${startStr}&end_date=${endStr}`
+			);
+			if (!response) return [];
+
 			const data = await response.json();
-			// Check if it's an error response
-			if (data.error) {
-				console.error('fetchDateRange API error:', data.error);
-				return [];
-			}
-			// Ensure it's an array
-			if (!Array.isArray(data)) {
-				console.error('fetchDateRange: expected array, got:', typeof data);
-				return [];
-			}
+			if (!Array.isArray(data)) return [];
+
 			return data
 				.filter((item: APODResponse) => item.media_type === 'image')
 				.reverse()
