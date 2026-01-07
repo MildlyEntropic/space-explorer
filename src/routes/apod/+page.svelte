@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { PUBLIC_NASA_API_KEY } from '$env/static/public';
+	import { env } from '$env/dynamic/public';
 	import type { SpaceImage } from '$lib/types/mars';
 	import Lightbox from '$lib/components/Lightbox.svelte';
 
-	const NASA_API_KEY = PUBLIC_NASA_API_KEY || 'DEMO_KEY';
+	const NASA_API_KEY = env.PUBLIC_NASA_API_KEY || 'DEMO_KEY';
 	const APOD_API = 'https://api.nasa.gov/planetary/apod';
 
 	let todayApod: SpaceImage | null = $state(null);
